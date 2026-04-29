@@ -1,6 +1,6 @@
 // src/dummy_data/team.ts
-export type TeamTag = "Administration" | "Research and Innovation";
-export type TeamGroup =
+export type TeamTag = "Administration" | "Research and Innovation"; //Egulo admin route e rekhe debo dropdown
+export type TeamGroup =     //Admin Route e dropdown
   | "Principal Research Scientist"
   | "Research Team"
   | "Research Intern"

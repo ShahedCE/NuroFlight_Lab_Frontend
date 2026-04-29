@@ -1,10 +1,13 @@
+import { kMaxLength } from "buffer";
+
 // src/dummy_data/careers.ts
+//Admin route e dropdown
 export type JobStatus = "PUBLISHED" | "CLOSED" | "DRAFT";
 
 export type JobPost = {
   id: string;
   title: string;
-  team: "Research Team" | "Development Team" | "Administration";
+  team: "Research Team" | "Development Team" | "Administration";//dropdown in frontend 
   level: "Internship" | "Junior" | "Mid" | "Senior";
   type: "Remote" | "Hybrid" | "Onsite";
   location: string;
@@ -20,7 +23,7 @@ export type JobPost = {
 };
 
 export const jobPosts: JobPost[] = [
-  {
+{
     id: "job-1",
     title: "Junior Robotics Engineer",
     team: "Research Team",

@@ -17,12 +17,12 @@ export type Publication = {
   codeUrl?: string;
 
   bibtex?: string;
-
   relatedProjectSlugs?: string[];
   updatedAt: string;
 };
 
 export const publications: Publication[] = [
+  
   {
     id: "pub1",
     slug: "real-time-eeg-classification",

@@ -219,9 +219,15 @@ function ApplyModal({
   onClose: () => void;
 }) {
   const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
   const [cv, setCv] = useState<File | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+
+  function validateEmail(email: string) {
+    // Simple email regex validation
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -229,6 +235,10 @@ function ApplyModal({
 
     if (fullName.trim().length < 3) {
       setErr("Please enter your full name.");
+      return;
+    }
+    if (email.trim().length === 0 || !validateEmail(email)) {
+      setErr("Please enter a valid email address.");
       return;
     }
     if (!cv) {
@@ -287,6 +297,20 @@ function ApplyModal({
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Your full name"
+              className="mt-2 h-10 w-full rounded-xl border border-white/15 bg-white/5 px-3 text-sm text-white outline-none
+                         placeholder:text-white/35 focus:border-white/25 focus:bg-white/10"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-white/80">
+              Email <span className="text-white/40">*</span>
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="your@email.com"
               className="mt-2 h-10 w-full rounded-xl border border-white/15 bg-white/5 px-3 text-sm text-white outline-none
                          placeholder:text-white/35 focus:border-white/25 focus:bg-white/10"
             />
