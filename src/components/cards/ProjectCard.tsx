@@ -27,9 +27,9 @@ const badge = statusStyles[item.status] ?? "border-white/15 bg-white/5 text-whit
       </p>
 
       <div className="mt-3 flex flex-wrap gap-2">
-        {item.tags.map((t) => (
-          <span
-            key={t}
+      {item.tags.map((t, index) => (
+        <span
+           key={`${item.id}-tag-${index}`} // ✅ FIXED
             className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[12px] text-white/65"
           >
             {t}

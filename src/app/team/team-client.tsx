@@ -10,38 +10,41 @@ import {
 import type { TeamGroup, TeamMember } from "@/dummy_data/team";
 import { useMemo } from "react";
 
+// Ensure GROUP_ORDER is serializable and stable
 const GROUP_ORDER: TeamGroup[] = [
- "Principal Research Scientist",
-   "Research Team",
-   "Research Intern",
-   "Software Development Team",
-   "Software Intern",
+  "Principal Research Scientist",
+  "Research Team",
+  "Research Intern",
+  "Software Development Team",
+  "Software Intern",
   "Administration",
 ];
 
-export default function TeamClient({ members }: { members: TeamMember[] }) {
-
- const grouped = useMemo(() => {
-  const map = new Map<TeamGroup, TeamMember[]>();
-
-  GROUP_ORDER.forEach((g) => map.set(g, []));
-
+// Group and sort members function
+function groupAndSortMembers(members: TeamMember[]) {
+  // Use array of arrays instead of Map to avoid serialization/hydration issues
+  const grouped: { group: TeamGroup; members: TeamMember[] }[] = GROUP_ORDER.map((g) => ({
+    group: g,
+    members: [],
+  }));
   members.forEach((m) => {
-    map.get(m.group)?.push(m);
+    const idx = GROUP_ORDER.indexOf(m.group);
+    if (idx !== -1) {
+      grouped[idx].members.push(m);
+    }
   });
-
-  // sort inside each group by priority
-  GROUP_ORDER.forEach((g) => {
-    map.set(
-      g,
-      (map.get(g) ?? []).sort(
-        (a, b) => (a.priority ?? 999) - (b.priority ?? 999)
-      )
-    );
+  // Sort each group's members
+  grouped.forEach((gr) => {
+    gr.members.sort((a, b) => (a.priority ?? 999) - (b.priority ?? 999));
   });
+  return grouped;
+}
 
-  return map;
-}, [members]);
+export default function TeamClient({ members }: { members: TeamMember[] }) {
+  // Use only data structures that serialize to JSON for SSR/CSR consistency
+  const groupedArray = useMemo(() => {
+    return groupAndSortMembers(members);
+  }, [members]);
 
   return (
     <main className="mt-2">
@@ -57,16 +60,13 @@ export default function TeamClient({ members }: { members: TeamMember[] }) {
         </header>
 
         <div className="mt-10 space-y-14">
-          {GROUP_ORDER.map((group) => {
-            const list = grouped.get(group) ?? [];
+          {groupedArray.map(({ group, members: list }) => {
             if (!list.length) return null;
-
             return (
               <section key={group}>
                 <h2 className="text-lg font-semibold text-white md:text-xl">
                   {group}
                 </h2>
-
                 <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
                   {list.map((m) => (
                     <TeamCard key={m.id} m={m} />
@@ -82,19 +82,19 @@ export default function TeamClient({ members }: { members: TeamMember[] }) {
 }
 
 function TeamCard({ m }: { m: TeamMember }) {
+  // Construct className as a single string with no linebreaks/extra whitespace for hydration consistency
+  const className =
+    "rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur transition hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_18px_50px_rgba(0,0,0,0.32)]";
+
   return (
-    <article
-      className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur
-                 transition hover:-translate-y-0.5 hover:border-white/20
-                 hover:shadow-[0_18px_50px_rgba(0,0,0,0.32)]"
-    >
+    <article className={className}>
       {/* image */}
       <div className="relative h-80 w-full overflow-hidden rounded-2xl ring-1 ring-white/10">
         <Image
           src={m.imageUrl}
           alt={m.name}
           fill
-          className="object-cover "
+          className="object-cover"
           sizes="(max-width: 1024px) 100vw, 33vw"
         />
       </div>

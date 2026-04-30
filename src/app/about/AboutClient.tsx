@@ -13,6 +13,7 @@ import {
   Award,
   Share2,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const researchAreas = [
   {
@@ -87,6 +88,14 @@ const valueCards = [
 ];
 
 export default function AboutClient() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+  
   return (
     <main className="mt-2">
       <div className="mx-auto max-w-6xl px-4 pb-14">
@@ -186,7 +195,7 @@ export default function AboutClient() {
                     <div
                       className={[
                         "flex h-9 w-9 items-center justify-center rounded-lg ring-1",
-                        "bg-linear-to-br",
+                        "bg-gradient-to-br",
                         a.tone,
                       ].join(" ")}
                     >
@@ -260,7 +269,7 @@ export default function AboutClient() {
       <div
         className={[
           "mx-auto flex h-11 w-11 items-center justify-center rounded-xl ring-1",
-          "bg-linear-to-br",
+          "bg-gradient-to-br",
           v.tone,
         ].join(" ")}
       >
@@ -294,7 +303,7 @@ export default function AboutClient() {
               href="/career"
               className="inline-flex h-10 items-center justify-center rounded-xl px-4 text-sm font-semibold
                          text-[#081022] border border-white/10
-                         bg-linear-to-r from-(--accent) to-(--accent2)
+                         bg-gradient-to-r from-cyan-300 to-blue-400
                          transition hover:-translate-y-0.5"
             >
               Career

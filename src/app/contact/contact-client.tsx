@@ -8,8 +8,8 @@ import {
   Phone,
   Send,
   Loader2,
-  ExternalLink,
-  Facebook, Linkedin 
+  Facebook,
+  Linkedin,
 } from "lucide-react";
 
 const ADMIN_EMAIL = "info@neuroflightlab.ai"; // change later
@@ -42,9 +42,7 @@ export default function ContactClient() {
   });
 
   const [errors, setErrors] = useState<Errors>({});
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
-    "idle"
-  );
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   const messageCount = useMemo(() => form.message.length, [form.message]);
 
@@ -69,7 +67,6 @@ export default function ContactClient() {
     const next = { ...form, [key]: value };
     setForm(next);
 
-    // ✅ pro UX: clear that field’s error as user types
     if (errors[key]) {
       const res = contactSchema.safeParse(next);
       if (res.success) setErrors({});
@@ -91,7 +88,6 @@ export default function ContactClient() {
 
     setStatus("sending");
     try {
-      // ✅ Later: send to backend
       // await fetch("/api/contact", { method:"POST", body: JSON.stringify(res.data) })
       await new Promise((r) => setTimeout(r, 800));
 
@@ -120,26 +116,23 @@ export default function ContactClient() {
         </header>
 
         {/* Top info cards */}
-    <section className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-              <InfoCard
+        <section className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <InfoCard
             icon={<MapPin className="h-5 w-5 text-sky-200" />}
             title="Our Office"
             lines={[
               "BD Office:",
               "Mirpur-10, Dhaka-1216, Bangladesh",
               "",
-          
             ]}
             tone="from-sky-400/25 to-cyan-400/10 ring-sky-400/25"
-            
-          /> 
+          />
           <InfoCard
             icon={<Mail className="h-5 w-5 text-emerald-200" />}
             title="Email Us"
             lines={[ADMIN_EMAIL]}
             tone="from-emerald-400/25 to-lime-400/10 ring-emerald-400/25"
           />
-
           <InfoCard
             icon={<Phone className="h-5 w-5 text-violet-200" />}
             title="Call Us"
@@ -152,36 +145,35 @@ export default function ContactClient() {
             lines={["Follow us for updates", "Research highlights & announcements"]}
             tone="from-blue-500/25 to-blue-400/10 ring-blue-400/25"
             footerLink={{
-                label: "Visit Facebook",
-                href: "https://www.facebook.com/neuroflightlab/",
+              label: "Visit Facebook",
+              href: "https://www.facebook.com/neuroflightlab/",
             }}
-                 />
-            <InfoCard
+          />
+          <InfoCard
             icon={<Linkedin className="h-5 w-5 text-sky-200" />}
             title="LinkedIn"
             lines={["Connect professionally", "Publications & collaborations"]}
             tone="from-sky-500/25 to-cyan-400/10 ring-sky-400/25"
             footerLink={{
-                label: "Visit LinkedIn",
-                href: "https://www.linkedin.com/company/neuroflightlab/",
+              label: "Visit LinkedIn",
+              href: "https://www.linkedin.com/company/neuroflightlab/",
             }}
-                 />
-            <InfoCard
+          />
+          <InfoCard
             icon={<MapPin className="h-5 w-5 text-amber-200" />}
             title="Find Us on Map"
             lines={[
-                "Mirpur-10",
-                "Dhaka, Bangladesh",
-                "View exact location below",
+              "Mirpur-10",
+              "Dhaka, Bangladesh",
+              "View exact location below",
             ]}
             tone="from-amber-500/25 to-orange-400/10 ring-amber-400/25"
             footerLink={{
-                label: "Open in Google Maps",
-                href: "https://www.google.com/maps/place/Mirpur-10",
+              label: "Open in Google Maps",
+              href: "https://www.google.com/maps/place/Mirpur-10",
             }}
-            />
+          />
         </section>
-
 
         {/* Main grid: form + connect */}
         <section className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-12">
@@ -260,10 +252,14 @@ export default function ContactClient() {
                 <button
                   type="submit"
                   disabled={status === "sending"}
-                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/10
-                             bg-linear-to-r from-(--accent) to-(--accent2)
-                             text-sm font-semibold text-[#081022] transition
-                             hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+                  className={
+                    [
+                      "inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/10",
+                      "bg-gradient-to-r from-cyan-300 to-blue-400",
+                      "text-sm font-semibold text-[#081022] transition",
+                      "hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70",
+                    ].join(" ")
+                  }
                 >
                   {status === "sending" ? (
                     <>
@@ -283,8 +279,6 @@ export default function ContactClient() {
                     Please fix the highlighted fields.
                   </div>
                 ) : null}
-
-             
               </form>
             </div>
           </div>
@@ -309,9 +303,7 @@ function InfoCard({
   tone: string;
   footerLink?: { label: string; href: string };
 }) {
-    
   return (
-    
     <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-center backdrop-blur">
       <div
         className={[
@@ -331,20 +323,23 @@ function InfoCard({
         )}
       </div>
 
-    {footerLink ? (
-    <div className="mt-4">
-        <a
-        href={footerLink.href}
-        target="_blank"
-        rel="noreferrer"
-        className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm font-semibold text-white
-                    transition hover:bg-white/10"
-        >
-        {footerLink.label}
-        </a>
-    </div>
-    ) : null}
-
+      {footerLink ? (
+        <div className="mt-4">
+          <a
+            href={footerLink.href}
+            target="_blank"
+            rel="noreferrer"
+            className={
+              [
+                "inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm font-semibold text-white",
+                "transition hover:bg-white/10",
+              ].join(" ")
+            }
+          >
+            {footerLink.label}
+          </a>
+        </div>
+      ) : null}
     </div>
   );
 }

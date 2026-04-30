@@ -25,6 +25,11 @@ export async function loginAdmin(payload: LoginPayload) {
     const res = await apiClient.get("/projects");
     return extractData<ProjectItem[]>(res);
   }
+
+  export async function getProjectById(id: string) {
+    const projects = await getProjects();
+    return projects.find((project: any) => project.id === id);
+  }
   
   export async function createProject(payload: ProjectPayload) {
     const res = await apiClient.post("/admin/projects", payload);
@@ -41,10 +46,14 @@ export async function loginAdmin(payload: LoginPayload) {
     return extractData(res);
   }
 
-  //Publications API
+  //Publications API  //Slug diye get nai------------------------------------------------------------
   export async function getPublications() {
     const res = await apiClient.get("/publications");
     return extractData<PublicationItem[]>(res);
+  }
+  export async function getPublicationById(id: string) {
+    const publications = await getPublications();
+    return publications.find((item: any) => item.id === id);
   }
   
   export async function createPublication(payload: PublicationPayload) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { JobPost } from "@/dummy_data/career";
 import { Briefcase, Calendar, MapPin, X, UploadCloud, Loader2, Send } from "lucide-react";
 
@@ -11,6 +11,13 @@ type ApplyState = {
 
 export default function CareerClient({ jobs }: { jobs: JobPost[] }) {
   const [selected, setSelected] = useState<ApplyState | null>(null);
+  const [mounted,setMounted]= useState(false);
+
+  useEffect(()=>{
+    setMounted(true);
+  },[])
+  if(!mounted) return null;
+  
 
   return (
     <main className="mt-2">
