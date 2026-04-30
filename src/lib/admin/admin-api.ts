@@ -76,6 +76,11 @@ export async function loginAdmin(payload: LoginPayload) {
     const res = await apiClient.get("/team");
     return extractData<TeamMemberItem[]>(res);
   }
+  //GET BY ID
+  export async function getTeamMemberById(id: string) {
+    const members = await getTeamMembers();
+    return members.find((item: any) => item.id === id);
+  }
   
   export async function createTeamMember(formData: FormData) {
     const res = await apiClient.post("/admin/team", formData, {
