@@ -7,8 +7,8 @@ export const teamSchema = z.object({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use lowercase slug like md-masud"),
 
   name: z.string().min(3, "Name required"),
-  title: z.string().min(2, "Title required"),
-  primaryAffiliation: z.string().optional(),
+  title: z.string().min(3, "Title required"),
+  primaryAffiliation: z.string().min(3, "Primary affiliation required"),
 
   bioLines: z.string().min(1, "At least one bio line required"),
   expertise: z.string().min(1, "At least one expertise required"),
@@ -22,7 +22,15 @@ export const teamSchema = z.object({
   github: z.string().optional(),
   scholar: z.string().optional(),
 
-  image: z.any(),
-});
+  image: z
+    .any()
+    .refine((files) => files instanceof FileList && files.length > 0, {
+      message: "Image file is required",
+    })
+    .refine((files) => files?.[0]?.type?.startsWith("image/"), {
+      message: "Only image files are allowed",
+    }),
+
+  });
 
 export type TeamFormValues = z.infer<typeof teamSchema>;

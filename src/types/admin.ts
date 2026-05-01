@@ -94,23 +94,28 @@ export type AdminUser = {
     updatedAt?: string;
   };
   
-  export type JobPostItem = {
-    id: string;
-    title: string;
-    team: string;
-    level: string;
-    type: string;
-    location: string;
-    status: string;
-    summary: string;
-    responsibilities: string[];
-    requirements: string[];
-    tags: string[];
-    postedAt?: string;
-    deadline?: string;
-    createdAt?: string;
-    updatedAt?: string;
-  };
+  export type JobTeam = "research" | "development" | "administration";
+export type JobLevel = "internship" | "junior" | "mid" | "senior";
+export type JobType = "remote" | "hybrid" | "onsite";
+export type JobStatus = "draft" | "published" | "closed";
+
+export type JobPostItem = {
+  id: string;
+  title: string;
+  team: JobTeam;
+  level: JobLevel;
+  type: JobType;
+  location: string;
+  status: JobStatus;
+  summary: string;
+  responsibilities: string[];
+  requirements: string[];
+  tags: string[];
+  postedAt?: string;
+  deadline?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
   
   export type JobPostPayload = {
     title: string;
@@ -131,6 +136,7 @@ export type AdminUser = {
     id: string;
     fullName: string;
     email: string;
+    cvFileUrl?: string;
     cvUrl?: string;
     cv?: string;
     jobPost?: JobPostItem;
@@ -146,3 +152,4 @@ export type AdminUser = {
     message: string;
     createdAt?: string;
   };
+
