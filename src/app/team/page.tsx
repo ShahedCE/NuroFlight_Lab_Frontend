@@ -1,9 +1,10 @@
 // src/app/team/page.tsx
 export const revalidate = 60;
 
-import { teamMembers } from "@/dummy_data/team";
+import { getTeamMembers } from "@/lib/public/public-api";
 import TeamClient from "./team-client";
 
-export default function TeamPage() {
-  return <TeamClient members={teamMembers} />;
+export default async  function TeamPage() {
+  const members= await getTeamMembers();
+  return <TeamClient members={members} />;
 }

@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState, ReactNode } from "react";
-import type { Project, ProjectStatus } from "@/dummy_data/projects";
+import { useEffect, useState, useMemo, ReactNode } from "react";
 import ProjectCard from "@/components/cards/ProjectCard";
+
+import { getProjects } from "@/lib/public/public-api";
+import { ProjectStatus, PublicProject } from "@/types/public";
 
 type Filter = "ALL" | ProjectStatus;
 
@@ -32,19 +34,36 @@ function Tab({
   );
 }
 
-export default function ProjectsClient({ projects }: { projects: Project[] }) {
+export default function ProjectsClient() {
   const [mounted, setMounted] = useState(false);
   const [filter, setFilter] = useState<Filter>("ALL");
   const [q, setQ] = useState("");
+  const [projects, setProjects] = useState<PublicProject[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  // Fetch projects on mount
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    getProjects()
+      .then((data) => {
+        if (!cancelled) {
+          setProjects(data ?? []);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true };
+  }, []);
+
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
-
-    return [...projects]
+    return projects
       .filter((p) => (filter === "ALL" ? true : p.status === filter))
       .filter((p) => {
         if (!query) return true;
@@ -57,8 +76,8 @@ export default function ProjectsClient({ projects }: { projects: Project[] }) {
   }, [projects, filter, q]);
 
   const counts = useMemo(() => {
-    const ongoing = projects.filter((p) => p.status === "ONGOING").length;
-    const completed = projects.filter((p) => p.status === "COMPLETED").length;
+    const ongoing = projects.filter((p) => p.status === "ongoing").length;
+    const completed = projects.filter((p) => p.status === "completed").length;
     return { all: projects.length, ongoing, completed };
   }, [projects]);
 
@@ -78,10 +97,10 @@ export default function ProjectsClient({ projects }: { projects: Project[] }) {
           <Tab active={filter === "ALL"} onClick={() => setFilter("ALL")}>
             All <span className="ml-1 text-white/60">({counts.all})</span>
           </Tab>
-          <Tab active={filter === "ONGOING"} onClick={() => setFilter("ONGOING")}>
+          <Tab active={filter === "ongoing"} onClick={() => setFilter("ongoing")}>
             Ongoing <span className="ml-1 text-white/60">({counts.ongoing})</span>
           </Tab>
-          <Tab active={filter === "COMPLETED"} onClick={() => setFilter("COMPLETED")}>
+          <Tab active={filter === "completed"} onClick={() => setFilter("completed")}>
             Completed <span className="ml-1 text-white/60">({counts.completed})</span>
           </Tab>
         </div>
@@ -97,7 +116,11 @@ export default function ProjectsClient({ projects }: { projects: Project[] }) {
         </div>
       </div>
 
-      {filtered.length ? (
+      {loading ? (
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-white/70">
+          Loading projects...
+        </div>
+      ) : filtered.length ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filtered.map((p) => (
             <ProjectCard key={p.id} item={p} />

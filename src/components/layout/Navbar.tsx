@@ -61,7 +61,7 @@ export default function Navbar() {
 
           <Link href="/" className="nav__brand" aria-label="NeuroFlight Lab Home">
             <Image
-              src="/logo.jpg"
+              src="/logo1.jpg" // path: my-frontend/public/logo.jpg       
               alt="NeuroFlight Lab logo"
               width={40}
               height={40}

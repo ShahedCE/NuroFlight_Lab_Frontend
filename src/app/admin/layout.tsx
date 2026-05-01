@@ -25,29 +25,22 @@ export default function AdminLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0f172a] text-white">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0f172a] text-white">
         Loading...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white flex">
-      
-      {/* Sidebar */}
+    <div className="fixed inset-0 z-50 flex bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white">
       <AdminSidebar />
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        
-        {/* Topbar */}
+      <div className="flex min-w-0 flex-1 flex-col">
         <AdminTopbar />
 
-        {/* Page Content */}
-        <main className="p-6">
+        <main className="min-w-0 flex-1 overflow-y-auto p-6">
           {children}
         </main>
-
       </div>
     </div>
   );

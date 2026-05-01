@@ -50,7 +50,7 @@ export default function ContactMessageDetailPage() {
   }
 
   return (
-    <div className="max-w-3xl">
+    <div className="mx-auto w-full">
       <h1 className="mb-6 text-2xl font-semibold text-white">
         Contact Message Details
       </h1>

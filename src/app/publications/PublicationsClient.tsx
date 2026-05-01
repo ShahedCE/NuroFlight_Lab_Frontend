@@ -2,8 +2,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { Publication } from "@/dummy_data/publications";
 import PublicationCard from "@/components/cards/PublicationCard";
+import { PublicPublication } from "@/types/public";
 
 const selectClass =
   "h-10 w-full rounded-xl border border-white/15 bg-[#0b1330] px-3 text-sm text-white outline-none focus:border-white/25 focus:bg-[#0d1738]";
@@ -11,11 +11,11 @@ const selectClass =
 const inputClass =
   "h-10 w-full rounded-xl border border-white/15 bg-white/5 px-3 text-sm text-white outline-none placeholder:text-white/40 focus:border-white/25 focus:bg-white/10";
 
-export default function PublicationsClient({
-  publications,
-}: {
-  publications: Publication[];
-}) {
+  export default function PublicationsClient({
+    publications,
+  }: {
+    publications: PublicPublication[];
+  }) {
   const [mounted, setMounted] = useState(false);
   const [year, setYear] = useState<string>("ALL");
   const [q, setQ] = useState("");

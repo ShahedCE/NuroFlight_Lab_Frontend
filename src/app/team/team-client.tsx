@@ -1,47 +1,63 @@
 "use client";
 
 import Image from "next/image";
-import {
-  Mail,
-  Linkedin,
-  Github,
-  GraduationCap,
-} from "lucide-react";
-import type { TeamGroup, TeamMember } from "@/dummy_data/team";
+import { Mail, Linkedin, Github, GraduationCap } from "lucide-react";
 import { useMemo } from "react";
+import type { PublicTeamMember } from "@/types/public";
+import { getFileUrl } from "@/lib/public/helpers";
 
-// Ensure GROUP_ORDER is serializable and stable
-const GROUP_ORDER: TeamGroup[] = [
-  "Principal Research Scientist",
-  "Research Team",
-  "Research Intern",
-  "Software Development Team",
-  "Software Intern",
-  "Administration",
+type TeamGroupValue =
+  | "principal_research_scientist"
+  | "research_team"
+  | "research_intern"
+  | "software_development_team"
+  | "software_intern"
+  | "administration";
+
+const GROUP_ORDER: { label: string; value: TeamGroupValue }[] = [
+  {
+    label: "Principal Research Scientist",
+    value: "principal_research_scientist",
+  },
+  { label: "Research Team", value: "research_team" },
+  { label: "Research Intern", value: "research_intern" },
+  {
+    label: "Software Development Team",
+    value: "software_development_team",
+  },
+  { label: "Software Intern", value: "software_intern" },
+  { label: "Administration", value: "administration" },
 ];
 
-// Group and sort members function
-function groupAndSortMembers(members: TeamMember[]) {
-  // Use array of arrays instead of Map to avoid serialization/hydration issues
-  const grouped: { group: TeamGroup; members: TeamMember[] }[] = GROUP_ORDER.map((g) => ({
-    group: g,
-    members: [],
+function groupAndSortMembers(members: PublicTeamMember[]) {
+  const grouped = GROUP_ORDER.map((group) => ({
+    label: group.label,
+    value: group.value,
+    members: [] as PublicTeamMember[],
   }));
-  members.forEach((m) => {
-    const idx = GROUP_ORDER.indexOf(m.group);
-    if (idx !== -1) {
-      grouped[idx].members.push(m);
+
+  members.forEach((member) => {
+    const index = grouped.findIndex((group) => group.value === member.group);
+
+    if (index !== -1) {
+      grouped[index].members.push(member);
     }
   });
-  // Sort each group's members
-  grouped.forEach((gr) => {
-    gr.members.sort((a, b) => (a.priority ?? 999) - (b.priority ?? 999));
+
+  grouped.forEach((group) => {
+    group.members.sort(
+      (a, b) => (a.priority ?? 999) - (b.priority ?? 999)
+    );
   });
+
   return grouped;
 }
 
-export default function TeamClient({ members }: { members: TeamMember[] }) {
-  // Use only data structures that serialize to JSON for SSR/CSR consistency
+export default function TeamClient({
+  members,
+}: {
+  members: PublicTeamMember[];
+}) {
   const groupedArray = useMemo(() => {
     return groupAndSortMembers(members);
   }, [members]);
@@ -49,27 +65,29 @@ export default function TeamClient({ members }: { members: TeamMember[] }) {
   return (
     <main className="mt-2">
       <div className="mx-auto max-w-6xl px-4 pb-16">
-        {/* Header */}
         <header className="text-center">
           <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl">
             Meet the team behind NeuroFlight Lab
           </h1>
           <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-white/70 md:text-[15px]">
-            Researchers, engineers, and collaborators who push our ideas from exploration to impact.
+            Researchers, engineers, and collaborators who push our ideas from
+            exploration to impact.
           </p>
         </header>
 
         <div className="mt-10 space-y-14">
-          {groupedArray.map(({ group, members: list }) => {
+          {groupedArray.map(({ label, value, members: list }) => {
             if (!list.length) return null;
+
             return (
-              <section key={group}>
+              <section key={value}>
                 <h2 className="text-lg font-semibold text-white md:text-xl">
-                  {group}
+                  {label}
                 </h2>
+
                 <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-                  {list.map((m) => (
-                    <TeamCard key={m.id} m={m} />
+                  {list.map((member) => (
+                    <TeamCard key={member.id} member={member} />
                   ))}
                 </div>
               </section>
@@ -81,39 +99,37 @@ export default function TeamClient({ members }: { members: TeamMember[] }) {
   );
 }
 
-function TeamCard({ m }: { m: TeamMember }) {
-  // Construct className as a single string with no linebreaks/extra whitespace for hydration consistency
-  const className =
-    "rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur transition hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_18px_50px_rgba(0,0,0,0.32)]";
+function TeamCard({ member }: { member: PublicTeamMember }) {
+  const imageSrc = getFileUrl(member.imageUrl || member.image) || "/logo.jpg";
 
   return (
-    <article className={className}>
-      {/* image */}
+    <article className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur transition hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_18px_50px_rgba(0,0,0,0.32)]">
       <div className="relative h-80 w-full overflow-hidden rounded-2xl ring-1 ring-white/10">
         <Image
-          src={m.imageUrl}
-          alt={m.name}
+          src={imageSrc}
+          alt={member.name}
           fill
           className="object-cover"
           sizes="(max-width: 1024px) 100vw, 33vw"
         />
       </div>
 
-      {/* name */}
       <h3 className="mt-4 text-base font-extrabold tracking-tight text-white">
-        {m.name}
+        {member.name}
       </h3>
 
-      <p className="mt-1 text-sm text-white/70">{m.title}</p>
-      {m.primaryAffiliation ? (
-        <p className="mt-1 text-sm text-white/55">{m.primaryAffiliation}</p>
-      ) : null}
+      <p className="mt-1 text-sm text-white/70">{member.title}</p>
 
-      {/* long bio */}
-      {m.bioLines?.length ? (
+      {member.primaryAffiliation && (
+        <p className="mt-1 text-sm text-white/55">
+          {member.primaryAffiliation}
+        </p>
+      )}
+
+      {member.bioLines?.length ? (
         <ul className="mt-4 space-y-1.5 text-sm leading-6 text-white/65">
-          {m.bioLines.map((line) => (
-            <li key={line} className="flex gap-2">
+          {member.bioLines.map((line, index) => (
+            <li key={`${member.id}-bio-${index}`} className="flex gap-2">
               <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-white/25" />
               <span>{line}</span>
             </li>
@@ -121,46 +137,43 @@ function TeamCard({ m }: { m: TeamMember }) {
         </ul>
       ) : null}
 
-      {/* expertise */}
-      {m.expertise?.length ? (
+      {member.expertise?.length ? (
         <div className="mt-4 text-sm text-white/70">
           <span className="font-semibold text-white">Expertise:</span>{" "}
-          {m.expertise.join(", ")}
+          {member.expertise.join(", ")}
         </div>
       ) : null}
 
-      {/* tags */}
-      {m.tags?.length ? (
+      {member.tags?.length ? (
         <div className="mt-4 flex flex-wrap gap-2">
-          {m.tags.map((t) => (
+          {member.tags.map((tag) => (
             <span
-              key={t}
+              key={tag}
               className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[12px] text-white/70"
             >
-              {t}
+              {tag}
             </span>
           ))}
         </div>
       ) : null}
 
-      {/* contact row */}
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        {m.email ? (
+        {member.email ? (
           <a
-            href={`mailto:${m.email}`}
+            href={`mailto:${member.email}`}
             className="inline-flex items-center gap-2 text-sm text-white/70 hover:text-white"
           >
             <Mail className="h-4 w-4" />
-            <span className="truncate">{m.email}</span>
+            <span className="truncate">{member.email}</span>
           </a>
         ) : (
           <span />
         )}
 
         <div className="flex items-center gap-3 text-white/70">
-          {m.linkedin ? (
+          {member.linkedin && (
             <a
-              href={m.linkedin}
+              href={member.linkedin}
               target="_blank"
               rel="noreferrer"
               className="hover:text-white"
@@ -168,10 +181,11 @@ function TeamCard({ m }: { m: TeamMember }) {
             >
               <Linkedin className="h-4 w-4" />
             </a>
-          ) : null}
-          {m.github ? (
+          )}
+
+          {member.github && (
             <a
-              href={m.github}
+              href={member.github}
               target="_blank"
               rel="noreferrer"
               className="hover:text-white"
@@ -179,10 +193,11 @@ function TeamCard({ m }: { m: TeamMember }) {
             >
               <Github className="h-4 w-4" />
             </a>
-          ) : null}
-          {m.scholar ? (
+          )}
+
+          {member.scholar && (
             <a
-              href={m.scholar}
+              href={member.scholar}
               target="_blank"
               rel="noreferrer"
               className="hover:text-white"
@@ -190,7 +205,7 @@ function TeamCard({ m }: { m: TeamMember }) {
             >
               <GraduationCap className="h-4 w-4" />
             </a>
-          ) : null}
+          )}
         </div>
       </div>
     </article>

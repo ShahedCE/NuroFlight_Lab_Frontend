@@ -50,7 +50,7 @@ export default function JobApplicationDetailPage() {
   const cvUrl = getFileUrl(item.cvFileUrl || item.cvUrl || item.cv);
   console.log(cvUrl);
   return (
-    <div className="max-w-3xl">
+    <div className="mx-auto w-full ">
       <h1 className="mb-6 text-2xl font-semibold text-white">
         Application Details
       </h1>

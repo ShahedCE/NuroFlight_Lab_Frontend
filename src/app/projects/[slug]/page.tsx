@@ -2,20 +2,29 @@ export const revalidate = 60;
 
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { projects } from "@/dummy_data/projects";
 import Link from "next/link";
+import { getProjectBySlug } from "@/lib/public/public-api";
+import type { PublicProject } from "@/types/public";
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
 
-export function generateStaticParams() {
-  return projects.map((p) => ({ slug: p.slug }));
+// Static params for SSG/ISR
+export async function generateStaticParams() {
+  // Import at runtime to avoid circular deps
+  const { getProjects } = await import("@/lib/public/public-api");
+  const projects = await getProjects();
+  return projects.map((p: PublicProject) => ({ slug: p.slug }));
 }
 
+// Metadata generator
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
-  const project = projects.find((p) => p.slug === slug);
+ const { slug } = await params;
+  let project: PublicProject | null = null;
+  try {
+    project = await getProjectBySlug(slug);
+  } catch {}
   if (!project) return { title: "Project Not Found | NeuroFlight Lab" };
   return {
     title: `${project.title} | NeuroFlight Lab`,
@@ -24,15 +33,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProjectDetailsPage({ params }: Props) {
-  const { slug } = await params;
-  const project = projects.find((p) => p.slug === slug);
+  const {slug}= await params;
+  let project: PublicProject | null = null;
+  try {
+    // project er slug theke data nao api function call kore
+    project = await getProjectBySlug(slug);
+  } catch {}
   if (!project) notFound();
 
   return (
     <section className="detail">
       <div className="detail__head">
-        <div className={`badge ${project.status === "ONGOING" ? "badge--on" : "badge--done"}`}>
-          {project.status}
+        <div className={`badge ${project.status === "ongoing" ? "badge--on" : "badge--done"}`}>
+          {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
         </div>
         <h1 className="detail__title">{project.title}</h1>
         <p className="detail__desc">{project.description}</p>
@@ -44,7 +57,7 @@ export default async function ProjectDetailsPage({ params }: Props) {
         </div>
 
         <div className="detail__meta">
-          Last updated: <span className="detail__muted">{project.updatedAt}</span>
+          Last updated: <span className="detail__muted">{project.updatedAt ? new Date(project.updatedAt).toLocaleDateString() : "N/A"}</span>
         </div>
       </div>
 
@@ -65,11 +78,12 @@ export default async function ProjectDetailsPage({ params }: Props) {
           </ul>
         </div>
       </div>
-         <div className="pub__backRow text-center">
-            <Link href="/projects" className="card__btn">
-              ← Back to Projects
-            </Link>
-          </div>
+
+      <div className="pub__backRow text-center">
+        <Link href="/projects" className="card__btn">
+          ← Back to Projects
+        </Link>
+      </div>
     </section>
   );
 }

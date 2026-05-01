@@ -144,14 +144,7 @@ export async function loginAdmin(payload: LoginPayload) {
   }
 
   //Contact Message API
-  export async function createContactMessage(payload: any) {
-    const res = await apiClient.post("/contact", payload);
-    return {
-      success: res?.data?.success ?? true,
-      message: res?.data?.message || "Contact message sent successfully",
-      data: res?.data?.data,
-    };
-  }
+  
   export async function getContactMessages() {
     const res = await apiClient.get("/admin/contact-messages");
     return extractData<ContactMessageItem[]>(res);

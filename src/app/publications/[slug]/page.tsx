@@ -5,23 +5,38 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { publications } from "@/dummy_data/publications";
-import { projects } from "@/dummy_data/projects";
 import ProjectCard from "@/components/cards/ProjectCard";
+import {
+  getPublicationBySlug,
+  getPublications,
+  getProjects,
+} from "@/lib/public/public-api";
+import type { PublicPublication } from "@/types/public";
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
 
-export function generateStaticParams() {
-  return publications.map((p) => ({ slug: p.slug }));
+export async function generateStaticParams() {
+  const publications = await getPublications();
+
+  return publications.map((p: PublicPublication) => ({
+    slug: p.slug,
+  }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const pub = publications.find((p) => p.slug === slug);
 
-  if (!pub) return { title: "Publication Not Found | NeuroFlight Lab" };
+  let pub: PublicPublication | null = null;
+
+  try {
+    pub = await getPublicationBySlug(slug);
+  } catch {}
+
+  if (!pub) {
+    return { title: "Publication Not Found | NeuroFlight Lab" };
+  }
 
   return {
     title: `${pub.title} | NeuroFlight Lab`,
@@ -31,13 +46,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PublicationDetailsPage({ params }: Props) {
   const { slug } = await params;
-  const pub = publications.find((p) => p.slug === slug);
+
+  let pub: PublicPublication | null = null;
+
+  try {
+    pub = await getPublicationBySlug(slug);
+  } catch {}
+
   if (!pub) notFound();
 
-  const related =
-    pub.relatedProjectSlugs?.length
-      ? projects.filter((pr) => pub.relatedProjectSlugs?.includes(pr.slug)).slice(0, 3)
-      : [];
+  const projects = await getProjects();
+
+  const related = pub.relatedProjectSlugs?.length
+    ? projects
+        .filter((pr) => pub.relatedProjectSlugs?.includes(pr.slug))
+        .slice(0, 3)
+    : [];
 
   return (
     <section className="detail">
@@ -62,35 +86,53 @@ export default async function PublicationDetailsPage({ params }: Props) {
           ))}
         </div>
 
-        {/* Actions */}
         <div className="pub__actions">
           {pub.pdfUrl ? (
-            <a className="btn btn--primary pub__btn" href={pub.pdfUrl} target="_blank" rel="noreferrer">
+            <a
+              className="btn btn--primary pub__btn"
+              href={pub.pdfUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
               PDF
             </a>
           ) : null}
 
           {pub.paperUrl ? (
-            <a className="btn pub__btn pub__btn--ghost" href={pub.paperUrl} target="_blank" rel="noreferrer">
+            <a
+              className="btn pub__btn pub__btn--ghost"
+              href={pub.paperUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
               View Paper
             </a>
           ) : null}
 
           {pub.doiUrl ? (
-            <a className="btn pub__btn pub__btn--ghost" href={pub.doiUrl} target="_blank" rel="noreferrer">
+            <a
+              className="btn pub__btn pub__btn--ghost"
+              href={pub.doiUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
               DOI
             </a>
           ) : null}
 
           {pub.codeUrl ? (
-            <a className="btn pub__btn pub__btn--ghost" href={pub.codeUrl} target="_blank" rel="noreferrer">
+            <a
+              className="btn pub__btn pub__btn--ghost"
+              href={pub.codeUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
               Code
             </a>
           ) : null}
         </div>
       </div>
 
-      {/* Abstract */}
       <div className="detail__grid">
         <div className="card">
           <h2 className="card__title">Abstract</h2>
@@ -107,17 +149,15 @@ export default async function PublicationDetailsPage({ params }: Props) {
           ) : (
             <p className="card__desc">BibTeX will be available soon.</p>
           )}
-
         </div>
       </div>
-      
-          <div className="pub__backRow text-center">
-            <Link href="/publications" className="card__btn">
-              ← Back to Publications
-            </Link>
-          </div>
 
-      {/* Related projects */}
+      <div className="pub__backRow text-center">
+        <Link href="/publications" className="card__btn">
+          ← Back to Publications
+        </Link>
+      </div>
+
       {related.length ? (
         <div className="section">
           <h2 className="sectionTitle">Related Projects</h2>

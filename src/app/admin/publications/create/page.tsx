@@ -70,7 +70,7 @@ export default function CreatePublicationPage() {
   };
 
   return (
-    <div className="max-w-4xl">
+    <div className="mx-auto w-full">
       <h1 className="mb-6 text-2xl font-semibold text-white">
         Create Publication
       </h1>
