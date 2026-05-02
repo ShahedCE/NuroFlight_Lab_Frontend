@@ -57,6 +57,7 @@ export async function getJobPostById(id: string) {
 }
 
 // Job Apply
+/*
 export async function applyToJob(jobId: string, formData: FormData) {
   const res = await publicApiClient.post(`/job-posts/${jobId}/apply`, formData, {
     headers: {
@@ -66,9 +67,59 @@ export async function applyToJob(jobId: string, formData: FormData) {
 
   return extractData(res);
 }
+*/
+
+export async function applyJob(payload: {
+  jobPostId: string;
+  fullName: string;
+  email: string;
+  cv: File;
+}) {
+  const formData = new FormData();
+
+  formData.append("fullName", payload.fullName);
+  formData.append("email", payload.email);
+  formData.append("cv", payload.cv);
+
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/job-posts/${payload.jobPostId}/apply`,
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const message = Array.isArray(data?.message)
+      ? data.message.join(", ")
+      : data?.message || "Failed to submit application";
+
+    throw new Error(message);
+  }
+
+  return data
+}
 
 // Contact
-export async function createContactMessage(payload: ContactPayload) {
-  const res = await publicApiClient.post("/contact", payload);
-  return extractData(res);
+export async function createContact(payload: {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/contact`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to send message");
+  }
+
+  return res.json();
 }

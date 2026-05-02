@@ -1,8 +1,33 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import type { JobPost } from "@/dummy_data/career";
-import { Briefcase, Calendar, MapPin, X, UploadCloud, Loader2, Send } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Briefcase,
+  Calendar,
+  MapPin,
+  X,
+  UploadCloud,
+  Loader2,
+  Send,
+  CheckCircle2,
+} from "lucide-react";
+import { applyJob } from "@/lib/public/public-api";
+
+type JobPost = {
+  id: string;
+  title: string;
+  summary: string;
+  status: string;
+  team: string;
+  level: string;
+  type: string;
+  location: string;
+  postedAt: string;
+  deadline?: string;
+  responsibilities: string[];
+  requirements: string[];
+  tags: string[];
+};
 
 type ApplyState = {
   jobId: string;
@@ -11,19 +36,46 @@ type ApplyState = {
 
 export default function CareerClient({ jobs }: { jobs: JobPost[] }) {
   const [selected, setSelected] = useState<ApplyState | null>(null);
-  const [mounted,setMounted]= useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  useEffect(()=>{
+  // Track which jobs were applied successfully
+  const [successJobId, setSuccessJobId] = useState<string | null>(null);
+  const [showSuccessMsg, setShowSuccessMsg] = useState(false);
+
+  useEffect(() => {
     setMounted(true);
-  },[])
-  if(!mounted) return null;
-  
+  }, []);
+
+  // Hide success message after a short time
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    if (showSuccessMsg) {
+      timeout = setTimeout(() => {
+        setShowSuccessMsg(false);
+        setSuccessJobId(null);
+      }, 2500); // 2.5 seconds
+    }
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [showSuccessMsg]);
+
+  if (!mounted) return null;
+
+  const publishedJobs = jobs.filter(
+    (j) => String(j.status).toLowerCase() === "published"
+  );
+
+  // If we successfully applied, filter out the applied job card.
+  const displayJobs = successJobId
+    ? publishedJobs.filter((job) => job.id !== successJobId)
+    : publishedJobs;
 
   return (
     <main className="mt-2">
       <div className="mx-auto max-w-6xl px-4 pb-16">
-        {/* Hero */}
-        <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur md:p-10">
+     {/* Hero */}
+     <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur md:p-10">
           <div
             className="pointer-events-none absolute -inset-24 opacity-80 blur-2xl"
             style={{
@@ -90,7 +142,50 @@ export default function CareerClient({ jobs }: { jobs: JobPost[] }) {
           </div>
         </section>
 
-        {/* Open roles */}
+        {/* Success message with blur background and delayed appearance */}
+        <div
+          className={`fixed inset-0 z-50 flex items-center justify-center ${showSuccessMsg ? '' : 'pointer-events-none'}`}
+          style={{
+            pointerEvents: showSuccessMsg ? 'auto' : 'none',
+          }}
+          aria-live="assertive"
+        >
+          {/* Blurred background */}
+          <div
+            className={`absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity duration-300 ${
+              showSuccessMsg ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+            }`}
+          ></div>
+          {/* Message container, delayed animation */}
+          <div
+            className={`relative flex items-center gap-2 rounded-xl border border-green-400/20 bg-green-400/10 px-6 py-4 text-green-200 text-base font-semibold shadow-lg transition-opacity duration-300 ${
+              showSuccessMsg ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
+            }`}
+            style={{
+              transitionDelay: showSuccessMsg ? '0.5s' : '0s',
+              pointerEvents: showSuccessMsg ? 'auto' : 'none',
+            }}
+          >
+            <CheckCircle2 className="h-5 w-5 text-green-300" />
+            Application submitted successfully!
+          </div>
+        </div>
+   
+
+        {/* Modal */}
+        {selected ? (
+        <ApplyModal
+          jobId={selected.jobId}
+          jobTitle={selected.jobTitle}
+          onClose={() => setSelected(null)}
+          onSuccess={() => {
+            setSuccessJobId(selected.jobId);
+            setShowSuccessMsg(true);
+            setSelected(null);
+          }}
+        />
+        ) : null}
+
         <section id="open-roles" className="mt-10">
           <div className="mb-5">
             <h2 className="text-2xl font-extrabold tracking-tight text-white">
@@ -102,65 +197,59 @@ export default function CareerClient({ jobs }: { jobs: JobPost[] }) {
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {jobs
-              .filter((j) => j.status === "PUBLISHED")
-              .map((job) => (
-                <JobCard
-                  key={job.id}
-                  job={job}
-                  onApply={() => setSelected({ jobId: job.id, jobTitle: job.title })}
-                />
-              ))}
+            {displayJobs.map((job) => (
+              <JobCard
+                key={job.id}
+                job={job}
+                onApply={() =>
+                  setSelected({
+                    jobId: job.id,
+                    jobTitle: job.title,
+                  })
+                }
+              />
+            ))}
+            {/* If there are no jobs to display after application, show a message */}
+            {displayJobs.length === 0 && (
+              <div className="col-span-full text-center text-white/70 py-10">
+                No more open roles at the moment. Please check back later!
+              </div>
+            )}
           </div>
         </section>
-
-        {/* Modal */}
-        {selected ? (
-          <ApplyModal
-            jobTitle={selected.jobTitle}
-            onClose={() => setSelected(null)}
-          />
-        ) : null}
       </div>
     </main>
   );
 }
 
-/* ---------------- Job Card ---------------- */
-
 function JobCard({ job, onApply }: { job: JobPost; onApply: () => void }) {
-  const pill = (text: string) => (
-    <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-white/75">
-      {text}
-    </span>
-  );
-
   return (
-    <article className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur transition
-                        hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.30)]">
-      {/* header */}
+    <article className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
       <div className="flex flex-wrap items-center gap-2">
-        {pill(job.team)}
-        {pill(job.level)}
-        {pill(job.type)}
+        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-white/75">
+          {job.team}
+        </span>
+        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-white/75">
+          {job.level}
+        </span>
+        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-white/75">
+          {job.type}
+        </span>
       </div>
 
-      <h3 className="mt-3 text-lg font-extrabold tracking-tight text-white">
-        {job.title}
-      </h3>
+      <h3 className="mt-3 text-lg font-extrabold text-white">{job.title}</h3>
 
-      <p className="mt-2 text-sm leading-7 text-white/70">
-        {job.summary}
-      </p>
+      <p className="mt-2 text-sm leading-7 text-white/70">{job.summary}</p>
 
-      {/* meta */}
       <div className="mt-4 flex flex-wrap gap-3 text-xs text-white/55">
         <span className="inline-flex items-center gap-2">
           <MapPin className="h-4 w-4" /> {job.location}
         </span>
+
         <span className="inline-flex items-center gap-2">
           <Calendar className="h-4 w-4" /> Posted: {job.postedAt}
         </span>
+
         {job.deadline ? (
           <span className="inline-flex items-center gap-2">
             <Calendar className="h-4 w-4" /> Deadline: {job.deadline}
@@ -168,46 +257,11 @@ function JobCard({ job, onApply }: { job: JobPost; onApply: () => void }) {
         ) : null}
       </div>
 
-      {/* details */}
-      <div className="mt-4 gap-10">
-        <div className="rounded-xl border border-white/10 bg-black/10 p-4 mb-1">
-          <div className="text-sm font-semibold text-white">You will</div>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-white/65">
-            {job.responsibilities.map((x) => (
-              <li key={x}>{x}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="rounded-xl border border-white/10 bg-black/10 p-4">
-          <div className="text-sm font-semibold text-white">Requirements</div>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-white/65">
-            {job.requirements.map((x) => (
-              <li key={x}>{x}</li>
-            ))}
-          </ul>
-        </div>
-      </div>
-
-      {/* tags + actions */}
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-2">
-          {job.tags.map((t) => (
-            <span
-              key={t}
-              className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[12px] text-white/65"
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-
+      <div className="mt-4">
         <button
           type="button"
           onClick={onApply}
-          className="inline-flex h-10 items-center justify-center rounded-xl border border-white/10
-                     bg-linear-to-r from-(--accent) to-(--accent2)
-                     px-4 text-sm font-semibold text-[#081022] transition hover:-translate-y-0.5"
+          className="inline-flex h-10 items-center justify-center rounded-xl border border-white/10 bg-linear-to-r from-(--accent) to-(--accent2) px-4 text-sm font-semibold text-[#081022]"
         >
           Apply Now →
         </button>
@@ -216,14 +270,16 @@ function JobCard({ job, onApply }: { job: JobPost; onApply: () => void }) {
   );
 }
 
-/* ---------------- Apply Modal ---------------- */
-
 function ApplyModal({
+  jobId,
   jobTitle,
   onClose,
+  onSuccess,
 }: {
+  jobId: string;
   jobTitle: string;
   onClose: () => void;
+  onSuccess: () => void;
 }) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -232,7 +288,6 @@ function ApplyModal({
   const [sending, setSending] = useState(false);
 
   function validateEmail(email: string) {
-    // Simple email regex validation
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
 
@@ -244,40 +299,64 @@ function ApplyModal({
       setErr("Please enter your full name.");
       return;
     }
-    if (email.trim().length === 0 || !validateEmail(email)) {
+
+    if (!validateEmail(email.trim())) {
       setErr("Please enter a valid email address.");
       return;
     }
+
     if (!cv) {
-      setErr("Please attach your CV (PDF/DOC/DOCX).");
+      setErr("Please attach your CV.");
       return;
     }
-    const okType = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
-    if (!okType.includes(cv.type)) {
+
+    const okTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+
+    if (!okTypes.includes(cv.type)) {
       setErr("CV must be PDF/DOC/DOCX.");
       return;
     }
+
     if (cv.size > 5 * 1024 * 1024) {
       setErr("CV must be under 5MB.");
       return;
     }
 
     setSending(true);
+
     try {
-      // later: send multipart/form-data to backend
-      await new Promise((r) => setTimeout(r, 900));
-      onClose();
-      alert("Application submitted! (Backend email integration pending)");
-    } catch {
-      setErr("Something went wrong. Please try again.");
-    } finally {
+      await applyJob({
+        jobPostId: jobId,
+        fullName: fullName.trim(),
+        email: email.trim(),
+        cv,
+      });
+
+      // Show success, hide modal
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        onClose();
+      }
+    } catch (error) {
+      setErr(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again."
+      );
+    }
+    finally {
       setSending(false);
     }
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4">
-      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0b1230] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.45)]">
+      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0b1230] p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-xs font-semibold text-white/60">Apply Now</div>
@@ -287,67 +366,43 @@ function ApplyModal({
           </div>
 
           <button
+            type="button"
             onClick={onClose}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10"
-            aria-label="Close"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         <form onSubmit={submit} className="mt-5 space-y-4">
-          <div>
-            <label className="text-sm font-medium text-white/80">
-              Full Name <span className="text-white/40">*</span>
-            </label>
+          <input
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            placeholder="Full name"
+            className="h-10 w-full rounded-xl border border-white/15 bg-white/5 px-3 text-sm text-white"
+          />
+
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            className="h-10 w-full rounded-xl border border-white/15 bg-white/5 px-3 text-sm text-white"
+          />
+
+          <label className="flex cursor-pointer items-center justify-between rounded-xl border border-white/15 bg-white/5 px-3 py-3 text-sm text-white/70">
+            <span className="inline-flex items-center gap-2">
+              <UploadCloud className="h-4 w-4" />
+              {cv ? cv.name : "Upload PDF/DOC/DOCX"}
+            </span>
+
             <input
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Your full name"
-              className="mt-2 h-10 w-full rounded-xl border border-white/15 bg-white/5 px-3 text-sm text-white outline-none
-                         placeholder:text-white/35 focus:border-white/25 focus:bg-white/10"
+              type="file"
+              accept=".pdf,.doc,.docx"
+              className="hidden"
+              onChange={(e) => setCv(e.target.files?.[0] ?? null)}
             />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-white/80">
-              Email <span className="text-white/40">*</span>
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              className="mt-2 h-10 w-full rounded-xl border border-white/15 bg-white/5 px-3 text-sm text-white outline-none
-                         placeholder:text-white/35 focus:border-white/25 focus:bg-white/10"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-white/80">
-              CV Attachment <span className="text-white/40">*</span>
-            </label>
-
-            <label className="mt-2 flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-white/15 bg-white/5 px-3 py-3 text-sm text-white/70 hover:bg-white/10">
-              <span className="inline-flex items-center gap-2">
-                <UploadCloud className="h-4 w-4" />
-                {cv ? cv.name : "Upload PDF/DOC/DOCX (max 5MB)"}
-              </span>
-              <span className="rounded-lg border border-white/10 bg-black/10 px-2 py-1 text-xs text-white/70">
-                Browse
-              </span>
-              <input
-                type="file"
-                accept=".pdf,.doc,.docx"
-                className="hidden"
-                onChange={(e) => setCv(e.target.files?.[0] ?? null)}
-              />
-            </label>
-
-            <div className="mt-2 text-xs text-white/45">
-              We only accept PDF/DOC/DOCX. Max size 5MB.
-            </div>
-          </div>
+          </label>
 
           {err ? (
             <div className="rounded-xl border border-rose-400/20 bg-rose-400/10 p-3 text-sm text-rose-100">
@@ -358,10 +413,7 @@ function ApplyModal({
           <button
             type="submit"
             disabled={sending}
-            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/10
-                       bg-linear-to-r from-(--accent) to-(--accent2)
-                       text-sm font-semibold text-[#081022] transition hover:-translate-y-0.5
-                       disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-linear-to-r from-(--accent) to-(--accent2) text-sm font-semibold text-[#081022]"
           >
             {sending ? (
               <>

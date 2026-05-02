@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { motion, type Variants } from "framer-motion";
 import {
   Sparkles,
   ShieldCheck,
@@ -13,7 +14,6 @@ import {
   Award,
   Share2,
 } from "lucide-react";
-import { useEffect, useState } from "react";
 
 const researchAreas = [
   {
@@ -87,39 +87,97 @@ const valueCards = [
   },
 ];
 
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 28 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.65,
+      ease: "easeOut",
+    },
+  },
+};
+
+const stagger: Variants = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.12,
+    },
+  },
+};
+
+const scaleIn: Variants = {
+  hidden: { opacity: 0, scale: 0.94, y: 24 },
+  show: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: {
+      duration: 0.55,
+      ease: "easeOut",
+    },
+  },
+};
+
+
+
 export default function AboutClient() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
-  
   return (
-    <main className="mt-2">
-      <div className="mx-auto max-w-6xl px-4 pb-14">
-        {/* Header */}
-        <h1 className="text-center text-2xl font-semibold tracking-tight text-white md:text-3xl">
+    <main className="mt-2 overflow-hidden">
+      <motion.div
+        className="mx-auto max-w-6xl px-4 pb-14"
+        initial="hidden"
+        animate="show"
+        variants={stagger}
+      >
+        <motion.h1
+          variants={fadeUp}
+          className="text-3xl text-center font-extrabold tracking-tight text-white md:text-4xl"
+        >
           About Us
-        </h1>
+        </motion.h1>
 
-        {/* Top section (same structure, dark theme) */}
-        <section className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-12 md:gap-8">
-          {/* Left card */}
-          <div className="md:col-span-5">
-            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.28)] backdrop-blur">
-              {/* subtle glow */}
-              <div className="pointer-events-none absolute -inset-24 opacity-70 blur-2xl"
+        <motion.section
+          variants={stagger}
+          className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-12 md:gap-8"
+        >
+          <motion.div variants={fadeUp} className="md:col-span-5">
+            <motion.div
+              whileHover={{ y: -6, scale: 1.01 }}
+              transition={{ type: "spring", stiffness: 260, damping: 20 }}
+              className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.28)] backdrop-blur"
+            >
+              <motion.div
+                className="pointer-events-none absolute -inset-24 opacity-70 blur-2xl"
+                animate={{
+                  scale: [1, 1.08, 1],
+                  opacity: [0.55, 0.8, 0.55],
+                }}
+                transition={{
+                  duration: 5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
                 style={{
                   background:
                     "radial-gradient(520px 260px at 30% 25%, rgba(122,167,255,0.20), transparent 60%), radial-gradient(420px 240px at 60% 60%, rgba(96,225,255,0.12), transparent 62%)",
                 }}
               />
+
               <div className="relative flex items-center justify-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/15">
+                <motion.div
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                  className="flex h-20 w-20 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/15"
+                >
                   <span className="text-2xl">🧠</span>
-                </div>
+                </motion.div>
               </div>
 
               <div className="relative mt-4 text-center">
@@ -127,68 +185,93 @@ export default function AboutClient() {
                   Building Transparent AI
                 </div>
                 <p className="mt-2 text-sm leading-6 text-white/65">
-                  Trustworthy systems, robust evaluation, and clear reporting for real-world use.
+                  Trustworthy systems, robust evaluation, and clear reporting
+                  for real-world use.
                 </p>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
-          {/* Right text */}
-          <div className="md:col-span-7">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-2 text-[13px] text-white/70">
+          <motion.div variants={fadeUp} className="md:col-span-7">
+            <motion.div
+              variants={fadeUp}
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-2 text-[13px] text-white/70"
+            >
               Neuroengineering • BCI • Intelligent Systems
-            </div>
+            </motion.div>
 
-            <h2 className="mt-4 text-xl font-extrabold tracking-tight text-white md:text-2xl">
+            <motion.h2
+              variants={fadeUp}
+              className="mt-4 text-xl font-extrabold tracking-tight text-white md:text-2xl"
+            >
               Driven by artificial intelligence and human values
-            </h2>
+            </motion.h2>
 
-            <p className="mt-3 text-sm leading-7 text-white/70 md:text-[15px]">
-              NeuroFlight Lab explores brain–computer interfaces, neuro-adaptive interaction, and robust
-              signal intelligence. Our work blends research and engineering to build reproducible,
+            <motion.p
+              variants={fadeUp}
+              className="mt-3 text-sm leading-7 text-white/70 md:text-[15px]"
+            >
+              NeuroFlight Lab explores brain–computer interfaces,
+              neuro-adaptive interaction, and robust signal intelligence. Our
+              work blends research and engineering to build reproducible,
               human-centered neurotechnology.
-            </p>
+            </motion.p>
 
-            <div className="mt-5 flex flex-wrap gap-3">
+            <motion.div variants={fadeUp} className="mt-5 flex flex-wrap gap-3">
               <Link
                 href="/projects"
-                className="inline-flex h-10 items-center justify-center rounded-xl px-4 text-sm font-semibold
-                           text-[#081022] border border-white/10
-                           bg-linear-to-r  bg-blue-200
-                           transition hover:-translate-y-0.5"
+                className="inline-flex h-10 items-center justify-center rounded-xl border border-white/10 bg-blue-200 px-4 text-sm font-semibold text-[#081022] transition hover:-translate-y-0.5"
               >
                 Explore Projects
               </Link>
 
               <Link
                 href="/publications"
-                className="inline-flex h-10 items-center justify-center rounded-xl border border-white/15 bg-white/5 px-4 text-sm font-semibold text-white
-                           transition hover:bg-white/10 hover:-translate-y-0.5"
+                className="inline-flex h-10 items-center justify-center rounded-xl border border-white/15 bg-white/5 px-4 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white/10"
               >
                 View Publications
               </Link>
-            </div>
-          </div>
-        </section>
+            </motion.div>
+          </motion.div>
+        </motion.section>
 
-        {/* Divider */}
-        <div className="my-10 h-px w-full bg-white/10" />
+        <motion.div
+          variants={fadeUp}
+          className="my-10 h-px w-full bg-white/10"
+        />
 
-        {/* Research Areas */}
-        <section>
-          <h2 className="text-center text-lg font-semibold text-white md:text-xl">
+        <motion.section
+          variants={stagger}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          <motion.h2
+            variants={fadeUp}
+            className="text-center text-lg font-semibold text-white md:text-xl"
+          >
             Core Research Areas
-          </h2>
-          <p className="mx-auto mt-2 max-w-2xl text-center text-sm leading-6 text-white/65">
-            Exploring directions to create transparent, interpretable, and impactful solutions.
-          </p>
+          </motion.h2>
 
-          <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <motion.p
+            variants={fadeUp}
+            className="mx-auto mt-2 max-w-2xl text-center text-sm leading-6 text-white/65"
+          >
+            Exploring directions to create transparent, interpretable, and
+            impactful solutions.
+          </motion.p>
+
+          <motion.div
+            variants={stagger}
+            className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          >
             {researchAreas.map((a) => (
-              <div
+              <motion.div
                 key={a.no}
-                className="group rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur transition
-                           hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.30)]"
+                variants={scaleIn}
+                whileHover={{ y: -8, scale: 1.015 }}
+                transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                className="group rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur transition hover:border-white/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.30)]"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
@@ -201,6 +284,7 @@ export default function AboutClient() {
                     >
                       <a.Icon className="h-5 w-5" />
                     </div>
+
                     <div className="text-sm font-semibold text-white">
                       {a.title}
                     </div>
@@ -214,17 +298,28 @@ export default function AboutClient() {
                 <p className="mt-3 text-sm leading-6 text-white/65">
                   {a.desc}
                 </p>
-              </div>
+              </motion.div>
             ))}
-          </div>
-        </section>
+          </motion.div>
+        </motion.section>
 
-        {/* Divider */}
-        <div className="my-10 h-px w-full bg-white/10" />
+        <motion.div
+          variants={fadeUp}
+          className="my-10 h-px w-full bg-white/10"
+        />
 
-        {/* Philosophy + Drives */}
-        <section className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur transition hover:border-white/20">
+        <motion.section
+          variants={stagger}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.25 }}
+          className="grid grid-cols-1 gap-6 md:grid-cols-2"
+        >
+          <motion.div
+            variants={fadeUp}
+            whileHover={{ y: -6 }}
+            className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur transition hover:border-white/20"
+          >
             <div className="flex items-center gap-2 text-sm font-semibold text-white">
               <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/5 ring-1 ring-white/15">
                 💡
@@ -232,12 +327,17 @@ export default function AboutClient() {
               Our Philosophy
             </div>
             <p className="mt-3 text-sm leading-7 text-white/65">
-              We build interpretable, accountable systems. We validate with strong baselines, rigorous
-              evaluation, and communicate results for reproducibility.
+              We build interpretable, accountable systems. We validate with
+              strong baselines, rigorous evaluation, and communicate results for
+              reproducibility.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur transition hover:border-white/20">
+          <motion.div
+            variants={fadeUp}
+            whileHover={{ y: -6 }}
+            className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur transition hover:border-white/20"
+          >
             <div className="flex items-center gap-2 text-sm font-semibold text-white">
               <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/5 ring-1 ring-white/15">
                 🎯
@@ -245,80 +345,96 @@ export default function AboutClient() {
               What drives Us
             </div>
             <p className="mt-3 text-sm leading-7 text-white/65">
-              Practical impact and responsible innovation—solving real problems without sacrificing
-              transparency, safety, and human-centered design.
+              Practical impact and responsible innovation—solving real problems
+              without sacrificing transparency, safety, and human-centered
+              design.
             </p>
-          </div>
-        </section>
+          </motion.div>
+        </motion.section>
 
-        {/* Divider */}
-        <div className="my-10 h-px w-full bg-white/10" />
+        <motion.div
+          variants={fadeUp}
+          className="my-10 h-px w-full bg-white/10"
+        />
 
-        {/* Core values */}
-        <section>
-          <h2 className="text-center text-lg font-semibold text-white md:text-xl">
+        <motion.section
+          variants={stagger}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          <motion.h2
+            variants={fadeUp}
+            className="text-center text-lg font-semibold text-white md:text-xl"
+          >
             Our Core Values
-          </h2>
-<div className="mt-7 flex flex-wrap gap-5">
-  {valueCards.map((v) => (
-    <div
-      key={v.title}
-      className="w-full sm:w-[calc(50%-10px)] rounded-2xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur
-                 transition hover:-translate-y-0.5 hover:border-white/20"
-    >
-      <div
-        className={[
-          "mx-auto flex h-11 w-11 items-center justify-center rounded-xl ring-1",
-          "bg-gradient-to-br",
-          v.tone,
-        ].join(" ")}
-      >
-        <v.Icon className="h-5 w-5" />
-      </div>
+          </motion.h2>
 
-      <div className="mt-3 text-sm font-semibold text-white">
-        {v.title}
-      </div>
+          <motion.div variants={stagger} className="mt-7 flex flex-wrap gap-5">
+            {valueCards.map((v) => (
+              <motion.div
+                key={v.title}
+                variants={scaleIn}
+                whileHover={{ y: -8, scale: 1.015 }}
+                transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                className="w-full rounded-2xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur transition hover:border-white/20 sm:w-[calc(50%-10px)]"
+              >
+                <div
+                  className={[
+                    "mx-auto flex h-11 w-11 items-center justify-center rounded-xl ring-1",
+                    "bg-gradient-to-br",
+                    v.tone,
+                  ].join(" ")}
+                >
+                  <v.Icon className="h-5 w-5" />
+                </div>
 
-      <p className="mx-auto mt-2 max-w-[42ch] text-sm leading-6 text-white/65">
-        {v.desc}
-      </p>
-    </div>
-  ))}
-</div>
-        </section>
+                <div className="mt-3 text-sm font-semibold text-white">
+                  {v.title}
+                </div>
 
-        {/* CTA */}
-        <section className="mt-10 rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur md:p-8">
+                <p className="mx-auto mt-2 max-w-[42ch] text-sm leading-6 text-white/65">
+                  {v.desc}
+                </p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </motion.section>
+
+        <motion.section
+          initial={{ opacity: 0, y: 35, scale: 0.97 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          viewport={{ once: true, amount: 0.25 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="mt-10 rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur md:p-8"
+        >
           <h3 className="text-center text-base font-semibold text-white md:text-lg">
             Join Our Research Community
           </h3>
+
           <p className="mx-auto mt-2 max-w-2xl text-center text-sm leading-7 text-white/65">
-            We welcome collaborators, researchers, and partners who share our vision. Explore opportunities
-            or reach out to discuss potential collaborations.
+            We welcome collaborators, researchers, and partners who share our
+            vision. Explore opportunities or reach out to discuss potential
+            collaborations.
           </p>
 
           <div className="mt-5 flex flex-wrap justify-center gap-3">
             <Link
               href="/career"
-              className="inline-flex h-10 items-center justify-center rounded-xl px-4 text-sm font-semibold
-                         text-[#081022] border border-white/10
-                         bg-gradient-to-r from-cyan-300 to-blue-400
-                         transition hover:-translate-y-0.5"
+              className="inline-flex h-10 items-center justify-center rounded-xl border border-white/10 bg-gradient-to-r from-cyan-300 to-blue-400 px-4 text-sm font-semibold text-[#081022] transition hover:-translate-y-0.5"
             >
               Career
             </Link>
+
             <Link
               href="/contact"
-              className="inline-flex h-10 items-center justify-center rounded-xl border border-white/15 bg-white/5 px-4 text-sm font-semibold text-white
-                         transition hover:bg-white/10 hover:-translate-y-0.5"
+              className="inline-flex h-10 items-center justify-center rounded-xl border border-white/15 bg-white/5 px-4 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white/10"
             >
               Contact Us
             </Link>
           </div>
-        </section>
-      </div>
-
+        </motion.section>
+      </motion.div>
     </main>
   );
 }

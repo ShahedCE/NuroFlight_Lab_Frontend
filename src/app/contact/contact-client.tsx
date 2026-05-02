@@ -11,8 +11,9 @@ import {
   Facebook,
   Linkedin,
 } from "lucide-react";
+import { createContact } from "@/lib/public/public-api";
 
-const ADMIN_EMAIL = "info@neuroflightlab.ai"; // change later
+const ADMIN_EMAIL = "info@neuroflightlab.org"; // change later
 
 // Zod schema
 const contactSchema = z.object({
@@ -43,6 +44,7 @@ export default function ContactClient() {
 
   const [errors, setErrors] = useState<Errors>({});
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [sendMessage, setSendMessage] = useState<string | null>(null);
 
   const messageCount = useMemo(() => form.message.length, [form.message]);
 
@@ -83,21 +85,31 @@ export default function ContactClient() {
     const res = validate(form);
     if (!res.ok) {
       setStatus("error");
+      setSendMessage("Failed to send message. Please try again.");
       return;
     }
 
     setStatus("sending");
+    setSendMessage(null);
     try {
       // await fetch("/api/contact", { method:"POST", body: JSON.stringify(res.data) })
-      await new Promise((r) => setTimeout(r, 800));
+      await createContact(res.data);
 
       setStatus("sent");
       setForm({ name: "", email: "", subject: "", message: "" });
       setErrors({});
-      setTimeout(() => setStatus("idle"), 2500);
+      setSendMessage("Your message was sent successfully! Thank you for contacting us.");
+      setTimeout(() => {
+        setStatus("idle");
+        setSendMessage(null);
+      }, 2500);
     } catch {
       setStatus("error");
-      setTimeout(() => setStatus("idle"), 2500);
+      setSendMessage("Failed to send your message. Please try again later.");
+      setTimeout(() => {
+        setStatus("idle");
+        setSendMessage(null);
+      }, 2500);
     }
   }
 
@@ -107,7 +119,7 @@ export default function ContactClient() {
         {/* Header */}
         <header className="text-center">
           <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl">
-            Get in Touch
+            Contact Us
           </h1>
           <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-white/70 md:text-[15px]">
             Have questions about our research or want to collaborate? We’d love
@@ -119,9 +131,9 @@ export default function ContactClient() {
         <section className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <InfoCard
             icon={<MapPin className="h-5 w-5 text-sky-200" />}
-            title="Our Office"
+            title="Address"
             lines={[
-              "BD Office:",
+              "Our Office:",
               "Mirpur-10, Dhaka-1216, Bangladesh",
               "",
             ]}
@@ -136,7 +148,7 @@ export default function ContactClient() {
           <InfoCard
             icon={<Phone className="h-5 w-5 text-violet-200" />}
             title="Call Us"
-            lines={["+880 1710-549763 (BD)"]}
+            lines={["+8801788046164"]}
             tone="from-violet-400/25 to-fuchsia-400/10 ring-violet-400/25"
           />
           <InfoCard
@@ -274,11 +286,20 @@ export default function ContactClient() {
                   )}
                 </button>
 
-                {status === "error" && Object.keys(errors).length ? (
-                  <div className="rounded-xl border border-rose-400/20 bg-rose-400/20 p-3 text-sm text-rose-100">
-                    Please fix the highlighted fields.
+                {/* Removed the field-level error message box here as requested */}
+
+                {/* Success and error messages */}
+                {sendMessage && (
+                  <div
+                    className={`rounded-xl border mt-2 p-3 text-sm ${
+                      status === "sent"
+                        ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-100"
+                        : "border-rose-400/30 bg-rose-400/10 text-rose-100"
+                    }`}
+                  >
+                    {sendMessage}
                   </div>
-                ) : null}
+                )}
               </form>
             </div>
           </div>

@@ -4,18 +4,24 @@ import Link from "next/link";
 import Hero from "@/components/sections/Hero";
 import SectionTitle from "@/components/sections/SectionTitle";
 
-import { projects } from "@/dummy_data/projects";
-import { publications } from "@/dummy_data/publications";
 
 import ProjectCard from "@/components/cards/ProjectCard";
 import PublicationCard from "@/components/cards/PublicationCard";
+import { getProjects, getPublications } from "@/lib/public/public-api";
 
-export default function HomePage() {
-  const ongoing = projects.filter((p) => p.status === "ONGOING").slice(0, 3);
+export default async function HomePage() {
+  const projects= await getProjects();
+  const publications= await getPublications();
+  const ongoing = projects.filter((p) => p.status === "ongoing").slice(0, 3);
 
   const recentPubs = [...publications]
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+    .sort((a, b) => {
+      const bDate = b.updatedAt ?? "";
+      const aDate = a.updatedAt ?? "";
+      return bDate.localeCompare(aDate);
+    })
     .slice(0, 3);
+    
   return (
     <>
       <Hero/>

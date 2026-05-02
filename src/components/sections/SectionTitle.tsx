@@ -19,7 +19,7 @@ export default function SectionTitle({
           </div>
         ) : null}
 
-        <h2 className="mt-1 text-xl font-extrabold tracking-tight text-white">
+      <h2 className="text-3xl font-extrabold text-white mb-6 animate-slideUp">
           {title}
         </h2>
 
